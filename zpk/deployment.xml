@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package version="2.0"
+xmlns="http://www.zend.com/server/deployment-descriptor/1.0">
+
+  <name>Moodle</name>
+  <summary>Instant Moodle</summary>
+  <description>Easy to use ZPK for quick, even instant, Moodle installation.</description>
+  <version>
+    <release>@-MOO-VER-@</release>
+  </version>
+
+  <icon>imoo.png</icon>
+  <eula>LICENSE.txt</eula>
+  <appdir>www</appdir>
+  <docroot>www/site</docroot>
+  <scriptsdir>scripts</scriptsdir>
+
+  <dependencies>
+		<required>
+			<php>
+				<min>7.2.0</min>
+			</php>
+			<extension>
+				<name>pgsql</name>
+			</extension>
+			<extension>
+				<name>xml</name>
+			</extension>
+			<extension>
+				<name>mbstring</name>
+			</extension>
+			<extension>
+				<name>curl</name>
+			</extension>
+			<extension>
+				<name>zip</name>
+			</extension>
+			<extension>
+				<name>gd</name>
+			</extension>
+			<extension>
+				<name>intl</name>
+			</extension>
+			<extension>
+				<name>xmlrpc</name>
+			</extension>
+			<extension>
+				<name>soap</name>
+			</extension>
+			<directive>
+				<name>memory_limit</name>
+				<min>512M</min>
+			</directive>
+			<directive>
+				<name>post_max_size</name>
+				<min>128M</min>
+			</directive>
+			<directive>
+				<name>upload_max_filesize</name>
+				<min>124M</min>
+			</directive>
+		</required>
+	</dependencies>
+
+  <parameters>
+	<parameter display="Database host" id="db_host" readonly="false" required="true" type="string">
+		<defaultvalue>postgres</defaultvalue>
+	</parameter>
+	<parameter display="Database username" id="db_username" readonly="false" required="true" type="string">
+		<defaultvalue>imoouser</defaultvalue>
+	</parameter>
+	<parameter display="Database password" id="db_password" readonly="false" required="true" type="password">
+		<defaultvalue>imoopassword</defaultvalue>
+	</parameter>
+	<parameter display="Database name" id="db_name" readonly="false" required="true" type="string">
+		<defaultvalue>imoodb</defaultvalue>
+	</parameter>
+	<parameter display="Moodle URL" id="site_url" readonly="false" required="true" type="string">
+		<defaultvalue>http://instant.moodle.lcl</defaultvalue>
+	</parameter>
+  </parameters>
+</package>

@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+    zendserver:
+        image: zend/php-zendserver:2019.0.5-apache
+        # need to research the nginx behavior - losing CSS and JS with it
+        #image: zend/php-zendserver
+        environment:
+            ZS_POST_INIT: '/usr/local/zend/tmp/custom.sh'
+            ZS_ADMIN_PASSWORD: 'zend'
+        volumes:
+            - ./custom.ini:/usr/local/zend/tmp/ini-patches/custom.ini
+            - ./custom.sh:/usr/local/zend/tmp/custom.sh
+            - ./../result:/usr/local/zend/tmp/ZPKs
+        ports:
+            - 2080:80
+            - 10081:10081
+
+    postgres:
+        image: postgres:13
+        environment:
+            POSTGRES_USER: 'imoouser'
+            POSTGRES_PASSWORD: 'imoopassword'
+            POSTGRES_DB: 'imoodb'
+        ports:
+            - 5432:5432
+
+        

@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+    pg-4-imoo:
+        image: postgres:13
+        environment:
+            POSTGRES_USER: 'imoouser'
+            POSTGRES_PASSWORD: 'imoopassword'
+            POSTGRES_DB: 'imoodb'
+            PGDATA: '/data/db'
+        volumes:
+            - ./pg_dump.sh:/usr/local/bin/pg_dump.sh
+            - connector:/output
+        ports:
+            - 5432:5432
+        entrypoint: ["bash", "/usr/local/bin/pg_dump.sh"]
+
+
+    zphp:
+        image: rbasayev/zendphp:ubuntu20-php74-moodle
+        build:
+            context: .
+        environment: 
+            ZSET_INI_KEYS: 'memory_limit=512M,post_max_size=120M,upload_max_filesize=115M,max_execution_time=600'
+        volumes:
+            - ./zpk:/opt/zpk
+            - ./result:/opt/zpk-out
+            - connector:/opt/dbdump
+        command: ['build.sh', '3.10']
+
+volumes:
+    connector:
