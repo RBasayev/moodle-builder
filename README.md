@@ -26,6 +26,20 @@ Then open http://instant.moodle.lcl in the browser. The admin user is __su__, th
 
 The Zend Server UI is at http://127.0.0.1:10081 (password __zend__). Job Queue is configured to run Moodle's cron.php every 10 minutes.
 
+## Automatic Release
+
+The workflow is triggered...
+
+```yaml
+on:
+  # I want to do this on schedule, but 'push' for now
+  push:
+    branches:
+      - "release_3.10"
+      - "release_3.11"
+      - "release_4.0"
+```
+
 ## The Point of This
 
 The point is to practice automatic building, testing, play with GitHub Actions. The ZPK is only the first format, will add at least one more - if time permits and I don't lose interest.

@@ -26,7 +26,7 @@ services:
             - ./zpk:/opt/zpk
             - ./result:/opt/zpk-out
             - connector:/opt/dbdump
-        command: ['build.sh', '3.10']
+        command: ['build.sh', "${mooVer}"]
 
 volumes:
     connector:

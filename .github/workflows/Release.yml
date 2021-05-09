@@ -1,0 +1,38 @@
+name: Instant Moodle Packing Line
+
+on:
+  # I want to do this on schedule, but 'push' for now
+  push:
+    branches:
+      - "release_3.10"
+      - "release_3.11"
+      - "release_4.0"
+
+jobs:
+  AutoRelease:
+    if: ${{ github.event_name == 'push' && (! contains(github.event.head_commit.message, 'noBuild')) }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Locally zendphp:ubuntu20-php74-moodle
+        run: docker build -t rbasayev/zendphp:ubuntu20-php74-moodle .
+
+      - name: Build Moodle ZPK
+        run: |
+            ver=${GITHUB_REF##*/release_}
+            env mooVer=$ver docker-compose up
+            if [ ! -s result/InstantMoodle-*.zpk ]; then exit 1; fi
+
+      - name: Create Release with ZPK Asset
+        run: |
+            cd result || exit 1
+            ver=$(ls -1 InstantMoodle-*.zpk | head -1 | sed -r 's|InstantMoodle-(.*)\.zpk|\1|')
+            echo "Detected version $ver"
+            stat InstantMoodle-$ver.zpk > /dev/null || exit 1
+            env GITHUB_TOKEN=${{ secrets.RELEASE_KEY }} hub release create \
+                --message "ver. $ver ($(date +'%d.%m.%Y %H:%M'))" \
+                --attach "InstantMoodle-$ver.zpk#Zend Server ZPK" \
+                "v$ver-$(date +%s)"
+
