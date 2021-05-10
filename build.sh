@@ -72,6 +72,7 @@ echo "Installing Moodle"
 dumpStatus set wait
 
 php /var/www/site/admin/cli/install.php \
+        --allow-unstable \
         --non-interactive \
         --agree-license \
         --wwwroot="http://$url" \
