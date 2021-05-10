@@ -17,9 +17,9 @@ services:
 
 
     zphp:
-        image: rbasayev/zendphp:ubuntu20-php74-moodle
-        build:
-            context: .
+        image: rbasayev/zendphp:ubuntu20-php74-moodle-builder
+        # build:
+        #     context: .
         environment: 
             ZSET_INI_KEYS: 'memory_limit=512M,post_max_size=120M,upload_max_filesize=115M,max_execution_time=600'
         volumes:

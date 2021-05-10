@@ -1,38 +1,120 @@
 name: Instant Moodle Packing Line
 
 on:
-  # I want to do this on schedule, but 'push' for now
   push:
-    branches:
-      - "release_3.10"
-      - "release_3.11"
-      - "release_4.0"
+
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    #         ┌───────────── minute (0 - 59)
+    #         │ ┌───────────── hour (0 - 23)
+    #         │ │ ┌───────────── day of the month (1 - 31)
+    #         │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+    #         │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+    #         │ │ │ │ │                                   
+    #         │ │ │ │ │
+    #         │ │ │ │ │
+    #         v v v v v
+    - cron:  '0 3 * * *'
+
 
 jobs:
-  AutoRelease:
-    if: ${{ github.event_name == 'push' && (! contains(github.event.head_commit.message, 'noBuild')) }}
+
+  check4update:
     runs-on: ubuntu-latest
+    outputs:
+      do310: ${{ steps.check.outputs.do310 }}
+      do311: ${{ steps.check.outputs.do311 }}
+
+    steps:
+      - id: check
+        run: |
+            latest="$(curl -sL "https://api.github.com/repos/moodle/moodle/tags" | jq '.[].name' | tr -d '"v')"
+            lat310=$(echo "$latest" | grep '3\.10\.' | sort -rV | head -1)
+            lat311=$(echo "$latest" | grep '3\.11\.' | sort -rV | head -1)
+
+            if [ -z "$lat310" ] || [ -z "$lat311" ]; then
+                echo "One of the latest Moodle releases came back empty. Let's try another time..."
+                exit 1
+            fi
+
+            released="$(curl -sL "https://api.github.com/repos/RBasayev/moodle-builder/tags" | jq '.[].name' | tr -d '"' | grep -E '^auto' | sed -r 's|^auto(.+)-[0-9]+$|\1|g')"
+            rel310=$(echo "$released" | grep '3\.10\.' | sort -rV | head -1)
+            rel311=$(echo "$released" | grep '3\.11\.' | sort -rV | head -1)
+
+            echo "::set-output name=do310::no"
+            echo "::set-output name=do311::no"
+            # I assume that we never can have auto-built version higher than Moodle release. Too optimistic? Perhaps...
+            if [ "$rel310" == "$lat310" ]; then
+                echo "Latest version in 3.10.x has already been built. Nothing to do."
+            else
+                echo "::set-output name=do310::$lat310"
+            fi
+            if [ "$rel311" == "$lat311" ]; then
+                echo "Latest version in 3.11.x has already been built. Nothing to do."
+            else
+                echo "::set-output name=do311::$lat311"
+            fi
+
+
+  AutoRelease310:
+    runs-on: ubuntu-latest
+    needs: check4update
+    if: ${{ needs.check4update.outputs.do310 != 'no' }}
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Build Locally zendphp:ubuntu20-php74-moodle
-        run: docker build -t rbasayev/zendphp:ubuntu20-php74-moodle .
+      # - name: Build Locally zendphp:ubuntu20-php74-moodle-builder
+      #   run: docker build -t rbasayev/zendphp:ubuntu20-php74-moodle-builder .
 
       - name: Build Moodle ZPK
         run: |
-            ver=${GITHUB_REF##*/release_}
-            env mooVer=$ver docker-compose up
-            if [ ! -s result/InstantMoodle-*.zpk ]; then exit 1; fi
+            ver=${{needs.check4update.outputs.do310}}
+            env mooVer=${ver:0:4} docker-compose up
+            if [ ! -s result/InstantMoodle-$ver.zpk ]; then exit 1; fi
+
+      - name: Test the ZPK
+        working-directory: ./test
+        run: docker-compose run sut
 
       - name: Create Release with ZPK Asset
+        working-directory: ./result
         run: |
-            cd result || exit 1
             ver=$(ls -1 InstantMoodle-*.zpk | head -1 | sed -r 's|InstantMoodle-(.*)\.zpk|\1|')
             echo "Detected version $ver"
             stat InstantMoodle-$ver.zpk > /dev/null || exit 1
             env GITHUB_TOKEN=${{ secrets.RELEASE_KEY }} hub release create \
                 --message "ver. $ver ($(date +'%d.%m.%Y %H:%M'))" \
-                --attach "InstantMoodle-$ver.zpk#Zend Server ZPK" \
-                "v$ver-$(date +%s)"
+                --attach "InstantMoodle-$ver.ZPK" \
+                "auto$ver-$(date +%s)"
+
+
+  AutoRelease311:
+    runs-on: ubuntu-latest
+    needs: check4update
+    if: ${{ needs.check4update.outputs.do311 != 'no' }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Moodle ZPK
+        run: |
+            ver=${{needs.check4update.outputs.do311}}
+            env mooVer=${ver:0:4} docker-compose up
+            if [ ! -s result/InstantMoodle-$ver.zpk ]; then exit 1; fi
+
+      - name: Test the ZPK
+        working-directory: ./test
+        run: docker-compose run sut
+
+      - name: Create Release with ZPK Asset
+        working-directory: ./result
+        run: |
+            ver=$(ls -1 InstantMoodle-*.zpk | head -1 | sed -r 's|InstantMoodle-(.*)\.zpk|\1|')
+            echo "Detected version $ver"
+            stat InstantMoodle-$ver.zpk > /dev/null || exit 1
+            env GITHUB_TOKEN=${{ secrets.RELEASE_KEY }} hub release create \
+                --message "ver. $ver ($(date +'%d.%m.%Y %H:%M'))" \
+                --attach "InstantMoodle-$ver.ZPK" \
+                "auto$ver-$(date +%s)"
 

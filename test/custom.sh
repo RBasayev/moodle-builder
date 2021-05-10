@@ -41,4 +41,4 @@ if echo "$qcrt" | grep 'result=success' > /dev/null 2>&1 ;then
     env ZQ_NAME=CRON php "$lctn/site/admin/cli/cron2jq.php"
 fi
 
-
+echo OK > /var/www/html/ready.html

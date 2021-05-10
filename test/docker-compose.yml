@@ -1,6 +1,15 @@
 version: '3.7'
 
 services:
+    sut:
+        image: curlimages/curl
+        volumes:
+            - ./test.sh:/test.sh
+        depends_on:
+          - zendserver
+          - postgres
+        command: ["sh", "/test.sh"]
+
     zendserver:
         image: zend/php-zendserver:2019.0.5-apache
         # need to research the nginx behavior - losing CSS and JS with it

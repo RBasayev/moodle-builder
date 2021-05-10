@@ -1,4 +1,5 @@
 FROM rbasayev/zendphp:ubuntu20-php74
+# FOR rbasayev/zendphp:ubuntu20-php74-moodle-builder
 COPY dumpStatus.php /usr/local/bin/dumpStatus.php
 COPY build.sh /usr/local/bin/build.sh
 RUN export DEBIAN_FRONTEND=noninteractive; \
