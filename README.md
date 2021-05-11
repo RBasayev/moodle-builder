@@ -28,17 +28,7 @@ The Zend Server UI is at http://127.0.0.1:10081 (password __zend__). Job Queue i
 
 ## Automatic Release
 
-The workflow is triggered...
-
-```yaml
-on:
-  # I want to do this on schedule, but 'push' for now
-  push:
-    branches:
-      - "release_3.10"
-      - "release_3.11"
-      - "release_4.0"
-```
+The workflow is triggered on push (every push) and at 3am every day (or whatever GitHub chooses to see as 3am).
 
 ## The Point of This
 

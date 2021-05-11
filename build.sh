@@ -26,8 +26,6 @@ pgdb=imoodb
 pguser=imoouser
 pgpass=imoopassword
 
-tss=$(date +%s)
-echo "Starting at $(date)"
 
 cd /var/www/site
 
@@ -127,8 +125,4 @@ cp /opt/dbdump/imoo.SQL /opt/toPack/scripts/
 cd /opt/toPack/
 zip -9 -qr /tmp/InstantMoodle-$rel.zip *
 cp /tmp/InstantMoodle-$rel.zip /opt/zpk-out/InstantMoodle-$rel.zpk
-
-tse=$(date +%s)
-echo "Ended at $(date)"
-echo "Total of $(($tse-$tss)) seconds"
 
