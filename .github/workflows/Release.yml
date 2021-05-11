@@ -81,7 +81,7 @@ jobs:
             stat InstantMoodle-$ver.zpk > /dev/null || exit 1
             env GITHUB_TOKEN=${{ secrets.RELEASE_KEY }} hub release create \
                 --message "ver. $ver ($(date +'%d.%m.%Y %H:%M'))" \
-                --attach "InstantMoodle-$ver.ZPK" \
+                --attach "InstantMoodle-$ver.zpk" \
                 "auto$ver-$(date +%s)"
 
 
