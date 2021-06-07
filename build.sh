@@ -44,7 +44,7 @@ function dumpStatus() {
 }
 
 echo "Getting Moodle"
-rel=$(curl -sL "https://api.github.com/repos/moodle/moodle/tags" | jq '.[].name' | tr -d '"v' | grep "$filter" | sort -rV | head -1)
+rel=$(curl -sL "https://api.github.com/repos/moodle/moodle/tags" | jq '.[].name' | tr -d '"v' | grep "$filter" | sed 's|$|.5555|g' | sort -rV | head -1 | sed 's|\.5555||g')
 
 curl -sLo moodle.tgz https://github.com/moodle/moodle/archive/refs/tags/v$rel.tar.gz
 

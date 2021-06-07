@@ -30,19 +30,20 @@ jobs:
     steps:
       - id: check
         run: |
-            latest="$(curl -sL "https://api.github.com/repos/moodle/moodle/tags" | jq '.[].name' | tr -d '"v')"
-            released="$(curl -sL "https://api.github.com/repos/RBasayev/moodle-builder/tags" | jq '.[].name' | tr -d '"' | grep -E '^auto' | sed -r 's|^auto(.+)-[0-9]+$|\1|g')"
+            latest="$(curl -sL "https://api.github.com/repos/moodle/moodle/tags" | jq '.[].name' | tr -d '"v' | sed 's|$|.5555|g')"
+            released="$(curl -sL "https://api.github.com/repos/RBasayev/moodle-builder/tags" | jq '.[].name' | tr -d '"' | grep -E '^auto' | sed -r 's|^auto(.+)-[0-9]+$|\1|g' | sed 's|$|.5555|g')"
 
+            # Adding and then removing ".5555" at the end fixes (hopefully) sorting in versions containing "-beta" or "-rc"
             for v in 3.10 3.11; do
                 av=${v//.}
-                latV=$(echo "$latest" | grep "$v\." | sort -rV | head -1)
+                latV=$(echo "$latest" | grep "$v\." | sort -rV | head -1 | sed 's|\.5555||g')
 
                 if [ -z "$latV" ]; then
                     echo "One of the latest Moodle releases came back empty. Let's try another time..."
                     exit 1
                 fi
 
-                relV=$(echo "$released" | grep "$v\." | sort -rV | head -1)
+                relV=$(echo "$released" | grep "$v\." | sort -rV | head -1 | sed 's|\.5555||g')
 
                 echo "::set-output name=do$av::no"
                 # I assume that we never can have auto-built version higher than Moodle release. Too optimistic? Perhaps...
@@ -69,7 +70,11 @@ jobs:
         run: |
             ver=${{needs.check4update.outputs.do310}}
             env mooVer=${ver:0:4} docker-compose up
-            if [ ! -s result/InstantMoodle-$ver.zpk ]; then exit 1; fi
+            if [ ! -s result/InstantMoodle-$ver.zpk ]; then
+              echo result/InstantMoodle-$ver.zpk not found:
+              ls -la result/
+              exit 1
+            fi
 
       - name: Test the ZPK
         working-directory: ./test
@@ -99,7 +104,11 @@ jobs:
         run: |
             ver=${{needs.check4update.outputs.do311}}
             env mooVer=${ver:0:4} docker-compose up
-            if [ ! -s result/InstantMoodle-$ver.zpk ]; then exit 1; fi
+            if [ ! -s result/InstantMoodle-$ver.zpk ]; then
+              echo result/InstantMoodle-$ver.zpk not found:
+              ls -la result/
+              exit 1
+            fi
 
       - name: Test the ZPK
         working-directory: ./test
